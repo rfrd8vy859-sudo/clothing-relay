@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>服装接龙</title>
+  <link rel="stylesheet" href="style.css?v=20">
+</head>
+<body>
+  <!-- ========== 登录页 ========== -->
+  <div id="login-page" class="login-page">
+    <div class="login-box">
+      <h1 class="app-title">👗 服装接龙</h1>
+      <p class="app-subtitle">商家上架 · 用户接龙 · 实时同步</p>
+      <p class="conn-status" id="conn-status">正在连接服务器…</p>
+
+      <div class="role-tabs">
+        <button class="role-tab active" data-role="user">用户登录</button>
+        <button class="role-tab" data-role="merchant">商家登录</button>
+      </div>
+
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label>昵称 <span class="req">*</span></label>
+          <input type="text" id="nickname" placeholder="请输入您的昵称" autocomplete="off" required>
+        </div>
+
+        <div class="form-group" id="password-group" style="display:none;">
+          <label>商家密码 <span class="req">*</span></label>
+          <input type="password" id="password" placeholder="请输入商家密码" autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="login-btn">登 录</button>
+        <p class="login-tip" id="login-tip"></p>
+      </form>
+
+      <div class="login-footer">
+        <p>用户账号：填写昵称即可直接登录</p>
+        <p>商家账号：需填写昵称 + 密码登录</p>
+        <p class="app-version">版本 v2.2</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 主应用 ========== -->
+  <div id="app" class="app hidden">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="logo">👗 服装接龙</h1>
+        <span class="role-badge" id="role-badge"></span>
+      </div>
+      <div class="topbar-right">
+        <span class="user-info" id="user-info"></span>
+        <span class="online-count" id="online-count">在线: 0</span>
+        <button class="btn btn-ghost" id="change-password-btn" style="display:none;">修改密码</button>
+        <button class="btn btn-ghost" id="logout-btn">退出</button>
+      </div>
+    </header>
+
+    <div class="main-container">
+      <!-- 公告区 -->
+      <section class="announcement-section">
+        <div class="section-header">
+          <h2>📢 公告</h2>
+          <button class="btn btn-sm btn-primary" id="edit-announcement-btn" style="display:none;">编辑公告</button>
+          <button class="btn btn-sm btn-ghost" id="save-announcement-btn" style="display:none;">保存</button>
+          <button class="btn btn-sm btn-ghost" id="cancel-announcement-btn" style="display:none;">取消</button>
+        </div>
+        <div class="announcement-content" id="announcement-view">
+          <span class="empty-tip" id="announcement-empty">暂无公告</span>
+          <span id="announcement-text" style="display:none;"></span>
+        </div>
+        <textarea class="announcement-editor" id="announcement-editor" style="display:none;" placeholder="请输入公告内容..."></textarea>
+        <div class="announcement-meta" id="announcement-meta"></div>
+      </section>
+
+      <!-- 商家通知区 -->
+      <section class="notification-section" id="notification-section" style="display:none;">
+        <div class="section-header">
+          <h2>🔔 商家通知</h2>
+          <button class="btn btn-sm btn-ghost" id="clear-notifications-btn">清空</button>
+        </div>
+        <div class="notification-list" id="notification-list">
+          <span class="empty-tip">暂无通知</span>
+        </div>
+      </section>
+
+      <!-- 产品列表 -->
+      <section class="products-section">
+        <div class="section-header">
+          <h2>🛍️ 产品列表</h2>
+          <button class="btn btn-sm btn-primary" id="add-product-btn" style="display:none;">+ 上架产品</button>
+        </div>
+        <div class="products-grid" id="products-grid">
+          <span class="empty-tip">暂无产品</span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ========== 通用确认弹窗 ========== -->
+  <div class="modal-overlay" id="confirm-modal" style="display:none;">
+    <div class="modal">
+      <h3 class="modal-title" id="confirm-title">提示</h3>
+      <p class="modal-body" id="confirm-body"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirm-cancel-btn">取消</button>
+        <button class="btn btn-primary" id="confirm-ok-btn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 产品编辑弹窗 ========== -->
+  <div class="modal-overlay" id="product-modal" style="display:none;">
+    <div class="modal modal-lg">
+      <h3 class="modal-title" id="product-modal-title">上架产品</h3>
+      <div class="form-group">
+        <label>产品名称 <span class="req">*</span></label>
+        <input type="text" id="product-name" placeholder="例如：纯棉短袖T恤">
+      </div>
+      <div class="form-group">
+        <label>产品图片</label>
+        <div class="image-uploader">
+          <input type="file" id="product-image" accept="image/*" style="display:none;">
+          <div class="image-preview" id="image-preview" onclick="document.getElementById('product-image').click()">
+            <span class="image-placeholder">点击上传图片</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>衣服颜色（回车添加，点击标签删除）</label>
+        <div class="tag-input" id="color-tag-input">
+          <input type="text" id="color-input" placeholder="输入颜色后回车，例如：红色">
+          <div class="tag-list" id="color-list"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>衣服尺码（回车添加，点击标签删除）</label>
+        <div class="tag-input" id="size-tag-input">
+          <input type="text" id="size-input" placeholder="输入尺码后回车，例如：M">
+          <div class="tag-list" id="size-list"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="product-cancel-btn">取消</button>
+        <button class="btn btn-primary" id="product-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 接龙弹窗 ========== -->
+  <div class="modal-overlay" id="relay-modal" style="display:none;">
+    <div class="modal">
+      <h3 class="modal-title" id="relay-modal-title">参与接龙</h3>
+      <div class="relay-product-info" id="relay-product-info"></div>
+      <div class="form-group">
+        <label>选择颜色</label>
+        <div class="option-list" id="relay-color-options"></div>
+      </div>
+      <div class="form-group">
+        <label>选择尺码</label>
+        <div class="option-list" id="relay-size-options"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="relay-cancel-btn">取消</button>
+        <button class="btn btn-primary" id="relay-confirm-btn">确认接龙</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 修改密码弹窗 ========== -->
+  <div class="modal-overlay" id="password-modal" style="display:none;">
+    <div class="modal">
+      <h3 class="modal-title">修改商家密码</h3>
+      <div class="form-group">
+        <label>原密码 <span class="req">*</span></label>
+        <input type="password" id="old-password" placeholder="请输入当前密码" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>新密码 <span class="req">*</span></label>
+        <input type="password" id="new-password" placeholder="请输入新密码（至少 4 位）" autocomplete="off">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="password-cancel-btn">取消</button>
+        <button class="btn btn-primary" id="password-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 接龙名单弹窗 ========== -->
+  <div class="modal-overlay" id="relay-list-modal" style="display:none;">
+    <div class="modal">
+      <h3 class="modal-title" id="relay-list-title">接龙名单</h3>
+      <div class="relay-detail-list" id="relay-detail-list"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="relay-list-close-btn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Toast 提示 ========== -->
+  <div class="toast" id="toast" style="display:none;"></div>
+
+  <script src="app.js?v=21"></script>
+</body>
+</html>
