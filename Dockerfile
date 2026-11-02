@@ -1,7 +1,7 @@
-FROM node:20
+FROM node:20-slim
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --omit=dev
 COPY . .
 ENV PORT=80
 EXPOSE 80
