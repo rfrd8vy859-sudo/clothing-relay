@@ -8,7 +8,7 @@ const sharp = require('sharp');
 const { Server } = require('socket.io');
 
 // ====== 数据持久化配置 ======
-const DATA_FILE = path.join(__dirname, 'data.json');
+const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
 
 const app = express();
 const server = http.createServer(app);
@@ -57,7 +57,17 @@ let nextNotifId = 1;
 // ====== 持久化：加载 / 保存 ======
 function loadData() {
   try {
-    if (!fs.existsSync(DATA_FILE)) return;
+    // 首次启动且挂载盘为空时，用镜像内置的 data.json 做初始数据
+    const seedFile = path.join(__dirname, 'data.json');
+    if (!fs.existsSync(DATA_FILE)) {
+      if (DATA_FILE !== seedFile && fs.existsSync(seedFile)) {
+        fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+        fs.copyFileSync(seedFile, DATA_FILE);
+        console.log(`已初始化数据文件: ${DATA_FILE}`);
+      } else {
+        return;
+      }
+    }
     const raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
     if (Array.isArray(raw.products)) products = raw.products;
     if (Array.isArray(raw.relayEntries)) relayEntries = raw.relayEntries;
