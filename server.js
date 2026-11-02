@@ -84,13 +84,19 @@ function loadData() {
 }
 
 function saveData() {
+  const data = { products, relayEntries, announcement, merchantNotifications, merchantPassword, nextProductId, nextRelayId, nextNotifId };
+  const json = JSON.stringify(data);
+  // 先写临时文件再原子替换；对象存储等网络盘不支持 rename 时退化为直接覆盖
   try {
-    const data = { products, relayEntries, announcement, merchantNotifications, merchantPassword, nextProductId, nextRelayId, nextNotifId };
-    const tmp = DATA_FILE + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(data));
-    fs.renameSync(tmp, DATA_FILE);
+    fs.writeFileSync(DATA_FILE + '.tmp', json);
+    fs.renameSync(DATA_FILE + '.tmp', DATA_FILE);
   } catch (e) {
-    console.error('保存数据失败:', e.message);
+    console.error('原子替换失败，改为直接写入:', e.message);
+    try {
+      fs.writeFileSync(DATA_FILE, json);
+    } catch (e2) {
+      console.error('保存数据失败:', e2.message);
+    }
   }
 }
 
