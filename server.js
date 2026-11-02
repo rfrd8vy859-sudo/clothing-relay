@@ -68,7 +68,16 @@ function loadData() {
         return;
       }
     }
-    const raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    console.log(`数据目录 ${path.dirname(DATA_FILE)} 内容: ${fs.readdirSync(path.dirname(DATA_FILE)).join(', ') || '(空)'}`);
+    let raw;
+    try {
+      raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    } catch (e) {
+      const bak = DATA_FILE + '.bak';
+      if (!fs.existsSync(bak)) throw e;
+      console.warn('主数据文件读取失败，改用备份:', e.message);
+      raw = JSON.parse(fs.readFileSync(bak, 'utf8'));
+    }
     if (Array.isArray(raw.products)) products = raw.products;
     if (Array.isArray(raw.relayEntries)) relayEntries = raw.relayEntries;
     if (raw.announcement && typeof raw.announcement === 'object') announcement = raw.announcement;
@@ -86,17 +95,14 @@ function loadData() {
 function saveData() {
   const data = { products, relayEntries, announcement, merchantNotifications, merchantPassword, nextProductId, nextRelayId, nextNotifId };
   const json = JSON.stringify(data);
-  // 先写临时文件再原子替换；对象存储等网络盘不支持 rename 时退化为直接覆盖
+  // 对象存储挂载对 rename 支持不稳定，改为直接覆盖写，写入前留一份 .bak
   try {
-    fs.writeFileSync(DATA_FILE + '.tmp', json);
-    fs.renameSync(DATA_FILE + '.tmp', DATA_FILE);
-  } catch (e) {
-    console.error('原子替换失败，改为直接写入:', e.message);
-    try {
-      fs.writeFileSync(DATA_FILE, json);
-    } catch (e2) {
-      console.error('保存数据失败:', e2.message);
+    if (fs.existsSync(DATA_FILE)) {
+      try { fs.copyFileSync(DATA_FILE, DATA_FILE + '.bak'); } catch (e) { /* 备份失败不影响主流程 */ }
     }
+    fs.writeFileSync(DATA_FILE, json);
+  } catch (e) {
+    console.error('保存数据失败:', e.message);
   }
 }
 
