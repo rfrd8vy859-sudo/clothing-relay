@@ -348,6 +348,15 @@ $('clear-notifications-btn').addEventListener('click', () => {
 });
 
 // ====== 产品渲染 ======
+let searchKeyword = '';
+
+// 关键词按空格拆分，全部命中名称/颜色/尺码才算匹配
+function productMatches(p, keyword) {
+  const words = keyword.toLowerCase().split(/\s+/).filter(Boolean);
+  const hay = [p.name || '', ...(p.colors || []), ...(p.sizes || [])].join(' ').toLowerCase();
+  return words.every(w => hay.includes(w));
+}
+
 function renderProducts() {
   const grid = $('products-grid');
   if (!currentProducts.length) {
@@ -355,8 +364,15 @@ function renderProducts() {
     return;
   }
 
+  const keyword = searchKeyword.trim();
+  const list = keyword ? currentProducts.filter(p => productMatches(p, keyword)) : currentProducts;
+  if (!list.length) {
+    grid.innerHTML = `<span class="empty-tip">没有找到与「${escapeHtml(keyword)}」相关的产品</span>`;
+    return;
+  }
+
   const isMerchant = currentRole === 'merchant';
-  grid.innerHTML = currentProducts.map(p => {
+  grid.innerHTML = list.map(p => {
     const myEntry = p.relayEntries.find(e => e.userNickname === currentNickname);
     const relayListHtml = p.relayEntries.length
       ? p.relayEntries.map(e =>
@@ -402,6 +418,21 @@ function renderProducts() {
     `;
   }).join('');
 }
+
+// ====== 搜索栏 ======
+$('product-search').addEventListener('input', (e) => {
+  searchKeyword = e.target.value;
+  $('product-search-clear').style.display = searchKeyword ? 'block' : 'none';
+  renderProducts();
+});
+
+$('product-search-clear').addEventListener('click', () => {
+  $('product-search').value = '';
+  searchKeyword = '';
+  $('product-search-clear').style.display = 'none';
+  renderProducts();
+  $('product-search').focus();
+});
 
 // ====== 商家查看接龙名单 ======
 function openRelayList(productId) {
