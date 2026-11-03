@@ -203,5 +203,22 @@
   <div class="toast" id="toast" style="display:none;"></div>
 
   <script src="app.js?v=21"></script>
+  <script>
+    // 记住上次使用的昵称，下次打开或退出后自动填入
+    (function () {
+      var K = 'clothing_relay_nickname';
+      function fill() {
+        var e = document.getElementById('nickname');
+        if (!e || e.value) return;
+        try { var v = localStorage.getItem(K); if (v) e.value = v; } catch (x) {}
+      }
+      fill();
+      document.getElementById('login-form').addEventListener('submit', function () {
+        var e = document.getElementById('nickname');
+        try { if (e && e.value.trim()) localStorage.setItem(K, e.value.trim()); } catch (x) {}
+      });
+      document.getElementById('logout-btn').addEventListener('click', function () { setTimeout(fill, 0); });
+    })();
+  </script>
 </body>
 </html>
