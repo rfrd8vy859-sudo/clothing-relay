@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>服装接龙</title>
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
   <!-- ========== 登录页 ========== -->
@@ -73,6 +73,14 @@
         </div>
         <textarea class="announcement-editor" id="announcement-editor" style="display:none;" placeholder="请输入公告内容..."></textarea>
         <div class="announcement-meta" id="announcement-meta"></div>
+      </section>
+
+      <!-- 搜索栏 -->
+      <section class="search-section">
+        <div class="search-box">
+          <input type="search" id="product-search" class="search-input" placeholder="搜索品牌 / 款式 / 颜色 / 尺码" autocomplete="off">
+          <button class="search-clear" id="product-search-clear" style="display:none;" aria-label="清空搜索">✕</button>
+        </div>
       </section>
 
       <!-- 商家通知区 -->
@@ -202,7 +210,7 @@
   <!-- ========== Toast 提示 ========== -->
   <div class="toast" id="toast" style="display:none;"></div>
 
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
   <script>
     // 记住上次使用的昵称，下次打开或退出后自动填入
     (function () {
