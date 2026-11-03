@@ -170,11 +170,45 @@ body {
 .user-info { font-weight: 500; color: var(--text); }
 .online-count { font-size: 13px; color: var(--text-light); }
 
-.main-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+/* ====== 搜索栏 ====== */
+.search-section {
+  margin-bottom: 24px;
 }
+.search-box {
+  position: relative;
+}
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 44px 13px 16px;
+  border: 1px solid #e5e1e6;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search-input::placeholder { color: var(--text-light); }
+.search-input:focus { border-color: var(--primary); }
+.search-input::-webkit-search-cancel-button { display: none; }
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 
 /* ====== 区块通用 ====== */
 .section-header {
